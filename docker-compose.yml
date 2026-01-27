@@ -1,0 +1,7 @@
+services:
+  liquibook-sandbox:
+    platform: linux/amd64
+    build: .
+    container_name: liquibook-sandbox
+    ports:
+      - "8050:8050"
