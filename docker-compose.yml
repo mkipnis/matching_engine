@@ -5,3 +5,7 @@ services:
     container_name: liquibook-sandbox
     ports:
       - "8050:8050"
+    environment:
+      DASH_HOST: 0.0.0.0
+      DASH_PORT: 8050
+      DASH_DEBUG: "false"

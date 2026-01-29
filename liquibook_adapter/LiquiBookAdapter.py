@@ -10,18 +10,23 @@ logger = logging.getLogger("LiquiBookAdapter")
 
 class LiquiBookAdapter:
 
-    def __init__(self, sandbox_instrument):
+    def __init__(self, prefix, sandbox_instrument):
+        self.prefix = prefix
         self.order_states = {}
+        self.instrument = sandbox_instrument
+
         self.depth_listener = DepthListener.DepthListener()
         self.bbo_listener = BBOListener.BBOListener()
         self.order_listener = OrderListener.OrderListener(self.order_states)
 
         self.price_depth_book = liquibook.DepthOrderBook()
-        self.price_depth_book.set_market_price(sandbox_instrument['market_price'])
-        self.price_depth_book.set_symbol(sandbox_instrument['symbol'])
+        self.price_depth_book.set_market_price(self.instrument['market_price'])
+        self.price_depth_book.set_symbol(self.instrument['symbol'])
         self.price_depth_book.set_depth_listener(self.depth_listener)
         self.price_depth_book.set_bbo_listener(self.bbo_listener)
         self.price_depth_book.set_order_listener(self.order_listener)
+
+        logger.info(f"LiquiBookAdapter initialized: prefix={self.prefix}")
 
     def update_order_book_data(self):
         return {

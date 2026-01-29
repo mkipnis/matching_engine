@@ -7,113 +7,105 @@ from liquibook_adapter.LiquiBookAdapter import LiquiBookAdapter
 
 class OrderFormComponent(object):
 
-    def __init__(self, app: dash.Dash, liquibook_adapter: LiquiBookAdapter, market_instrument: dict):
-        self.liquibook_adapter = liquibook_adapter
-        self.app = app
+    def __init__(self, prefix):
+        self.prefix = prefix
         self.order_details = {}
-        self.instrument = market_instrument
-
-        self.register_callbacks()
-
 
     def layout(self):
         return html.Div(
             dbc.Card(
-            id="order-form-wrapper",
-            children=dbc.CardBody([
-                dbc.Row([
-                    dcc.Store(id="form-ready-store", data=False),
-                    dcc.Store(id="selected-price-level", data=False),
-                    dbc.Col([
-                        dbc.Label("Price"),
-                        dbc.Input(type="number", id="price-input", step=100, placeholder="Enter price")
-                    ], width=3),
-                    dbc.Col([
-                        dbc.Label("Quantity"),
-                        dbc.Input(type="number", id="quantity-input", step=100, placeholder="Enter quantity", value=500)
-                    ], width=3),
-                    dbc.Col([
-                        dbc.Label("Order Type"),
-                        dcc.Dropdown(
-                            id="order-type-dropdown",
-                            options=[
-                                {"label": "Market", "value": "market"},
-                                {"label": "Limit", "value": "limit"},
-                                {"label": "Stop", "value": "stop"},
-                                {"label": "Stop Limit", "value": "stop_limit"},
-                            ],
-                            style={
-                                "color": "black"
-                            },
-                            value="limit",
-                            placeholder="Select order type"
-                        )
-                    ], width=3),
-                    dbc.Col([
-                        dbc.Label("Stop Price"),
-                        dbc.Input(type="number", id="stop-price-input", step=1, placeholder="Enter stop price",
-                                  disabled=True, value=0)
-                    ], width=3),
-                ], className="mb-3"),
-                dbc.Row([
-                    dbc.Col([
-                        dbc.Label("Condition"),
-                        dcc.Dropdown(
-                            id="condition-dropdown",
-                            options=[
-                                {"label": "Day", "value": liquibook.oc_no_conditions},
-                                {"label": "Immediate or cancel", "value": liquibook.oc_immediate_or_cancel},
-                                {"label": "Fill or Kill", "value": liquibook.oc_fill_or_kill},
-                            ],
-                            style={
-                                "color": "black"
-                            },
-                            value=liquibook.oc_no_conditions,
-                            placeholder="Select condition"
-                        )
-                    ], width=3),
-                    dbc.Col(
-                        html.Div([
-                            dbc.Label("All or None"),
-                            dbc.Checkbox(id="all-or-none-checkbox", value=False)
-                        ], className="d-flex align-items-center gap-2 mt-4"),
-                        width=3
-                    ),
-                    dbc.Col([
-                        dbc.Button("Buy", id="buy-button", color="success", className="me-2 w-25"),
-                        dbc.Button("Sell", id="sell-button", color="danger", className="me-2 w-25"),
-                    ], width=6, className="d-flex justify-content-left align-items-center")
+                id=f"{self.prefix}-order-form-wrapper",
+                children=dbc.CardBody([
+                    dbc.Row([
+                        dcc.Store(id=f"{self.prefix}-form-ready-store"),
+                        dcc.Store(id=f"{self.prefix}-selected-price-level"),
+                        dbc.Col([
+                            dbc.Label("Price"),
+                            dbc.Input(type="number", id=f"{self.prefix}-price-input", step=100, placeholder="Enter price")
+                        ], width=3),
+                        dbc.Col([
+                            dbc.Label("Quantity"),
+                            dbc.Input(type="number", id=f"{self.prefix}-quantity-input", step=100, placeholder="Enter quantity", value=500)
+                        ], width=3),
+                        dbc.Col([
+                            dbc.Label("Order Type"),
+                            dcc.Dropdown(
+                                id=f"{self.prefix}-order-type-dropdown",
+                                options=[
+                                    {"label": "Market", "value": "market"},
+                                    {"label": "Limit", "value": "limit"},
+                                    {"label": "Stop", "value": "stop"},
+                                    {"label": "Stop Limit", "value": "stop_limit"},
+                                ],
+                                style={"color": "black"},
+                                value="limit",
+                                placeholder="Select order type"
+                            )
+                        ], width=3),
+                        dbc.Col([
+                            dbc.Label("Stop Price"),
+                            dbc.Input(type="number", id=f"{self.prefix}-stop-price-input", step=1, placeholder="Enter stop price",
+                                      disabled=True, value=0)
+                        ], width=3),
+                    ], className="mb-3"),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Label("Condition"),
+                            dcc.Dropdown(
+                                id=f"{self.prefix}-condition-dropdown",
+                                options=[
+                                    {"label": "Day", "value": liquibook.oc_no_conditions},
+                                    {"label": "Immediate or cancel", "value": liquibook.oc_immediate_or_cancel},
+                                    {"label": "Fill or Kill", "value": liquibook.oc_fill_or_kill},
+                                ],
+                                style={"color": "black"},
+                                value=liquibook.oc_no_conditions,
+                                placeholder="Select condition"
+                            )
+                        ], width=3),
+                        dbc.Col(
+                            html.Div([
+                                dbc.Label("All or None"),
+                                dbc.Checkbox(id=f"{self.prefix}-all-or-none-checkbox", value=False)
+                            ], className="d-flex align-items-center gap-2 mt-4"),
+                            width=3
+                        ),
+                        dbc.Col([
+                            dbc.Button("Buy", id=f"{self.prefix}-buy-button", color="success", className="me-2 w-25"),
+                            dbc.Button("Sell", id=f"{self.prefix}-sell-button", color="danger", className="me-2 w-25"),
+                        ], width=6, className="d-flex justify-content-left align-items-center")
+                    ]),
                 ]),
-            ]),
-            style={"borderRadius": "10px"},
-        ))
+                style={"borderRadius": "10px"},
+            )
+        )
 
-    def register_callbacks(self):
+    @staticmethod
+    def register_callbacks(app, prefix, adapter_container):
+        """Register all callbacks for the OrderFormComponent."""
 
-        @self.app.callback(
-            Output("stop-price-input", "disabled"),
-            Input("order-type-dropdown", "value"),
+        @app.callback(
+            Output(f"{prefix}-stop-price-input", "disabled"),
+            Input(f"{prefix}-order-type-dropdown", "value"),
             prevent_initial_call=True
         )
         def toggle_stop_price(order_type):
-            if order_type in ["stop", "stop_limit"]:
-                return False
-            return True
+            return order_type not in ["stop", "stop_limit"]
 
-        @self.app.callback(
-            Output("liquibook-state-change", "data"),
-            Input("buy-button", "n_clicks"),
-            Input("sell-button", "n_clicks"),
-            State("price-input", "value"),
-            State("quantity-input", "value"),
-            State("order-type-dropdown", "value"),
-            State("stop-price-input", "value"),
-            State("condition-dropdown", "value"),
-            State("all-or-none-checkbox", "value"),
+        @app.callback(
+            Output(f"{prefix}-liquibook-state-change", "data"),
+            Input(f"{prefix}-buy-button", "n_clicks"),
+            Input(f"{prefix}-sell-button", "n_clicks"),
+            State(f"{prefix}-price-input", "value"),
+            State(f"{prefix}-quantity-input", "value"),
+            State(f"{prefix}-order-type-dropdown", "value"),
+            State(f"{prefix}-stop-price-input", "value"),
+            State(f"{prefix}-condition-dropdown", "value"),
+            State(f"{prefix}-all-or-none-checkbox", "value"),
             prevent_initial_call=True
         )
         def handle_order(buy_clicks, sell_clicks, price, quantity, order_type, stop_price, order_condition,
-                 all_or_none):
+                         all_or_none):
 
             triggered = callback_context.triggered_id
 
@@ -129,24 +121,37 @@ class OrderFormComponent(object):
                 'condition': order_condition,
             }
 
-            if triggered == "buy-button":
+            if triggered == f"{prefix}-buy-button":
                 operation['is_buy'] = True
-            elif triggered == "sell-button":
+            elif triggered == f"{prefix}-sell-button":
                 operation['is_buy'] = False
 
-            liquibook_state = self.liquibook_adapter.submit_order(operation)
+            adapter = adapter_container[prefix]
+            liquibook_state = adapter.submit_order(operation)
 
             return liquibook_state
 
-        @self.app.callback(
-            Output("price-input", "value"),
-            Input("selected-price-level", "data"),
-            State("price-input", "value"),
-            prevent_initial_call=True
+        @app.callback(
+            Output(f"{prefix}-price-input", "value"),
+            Input(f"{prefix}-selected-price-level", "data"),
+            State(f"{prefix}-price-input", "value"),
+            prevent_initial_call = True
         )
         def price_select(price_depth_level, latest_price):
-            if price_depth_level is None:
-                if latest_price is not None:
-                    return latest_price
-                return self.instrument['market_price']
-            return price_depth_level
+
+            # User clicked a price level
+            if price_depth_level is not None:
+                return price_depth_level
+
+            # Preserve manually typed value
+            if latest_price is not None:
+                return latest_price
+
+            # Fallback to market price
+            adapter = adapter_container.get(prefix)
+            if adapter and "market_price" in adapter.instrument:
+                return adapter.instrument["market_price"]
+
+            return dash.no_update
+
+

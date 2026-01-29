@@ -4,11 +4,11 @@ from dash import dcc, Input, Output, html, callback_context
 
 
 class PriceDepthGrid(object):
-    def __init__(self, app: dash.Dash):
-        self.app = app
+    def __init__(self, prefix: str):
+        self.prefix = prefix
 
         self.grid = dag.AgGrid(
-            id="price-depth-grid",
+            id=f"{self.prefix}-price-depth-grid",
             columnDefs=[
                 {
                     "headerName": "BidPrice",
@@ -46,36 +46,36 @@ class PriceDepthGrid(object):
             className="ag-theme-quartz-dark",
         )
 
-        self._register_callbacks()
 
     def layout(self):
         return html.Div([
-            dcc.Store(id="liquibook-state-change"),
-            dcc.Store(id="liquibook-order-cancel-modify"),
+            dcc.Store(id=f"{self.prefix}-liquibook-state-change"),
+            dcc.Store(id=f"{self.prefix}-liquibook-order-cancel-modify"),
             self.grid,
         ])
 
-    def _register_callbacks(self):
-        @self.app.callback(
-            Output("price-depth-grid", "rowData"),
-            Input("liquibook-state-change", "data"),
-            Input("liquibook-order-cancel-modify", "data"),
-            prevent_initial_call=True
+    @staticmethod
+    def register_callbacks(app, prefix):
+        @app.callback(
+        Output(f"{prefix}-price-depth-grid", "rowData"),
+        Input(f"{prefix}-liquibook-state-change", "data"),
+        Input(f"{prefix}-liquibook-order-cancel-modify", "data"),
+        prevent_initial_call=True
         )
         def on_price_depth_change(price_depth_change, price_depth_change_modify):
 
             triggered = callback_context.triggered_id
 
-            if triggered == "liquibook-state-change":
+            if triggered == f"{prefix}-liquibook-state-change":
                 return price_depth_change['price_depth']
-            elif triggered == "liquibook-order-cancel-modify":
+            elif triggered == f"{prefix}-liquibook-order-cancel-modify":
                 return price_depth_change_modify['price_depth']
 
             return None
 
-        @self.app.callback(
-            Output("selected-price-level", "data"),
-            Input("price-depth-grid", "cellClicked")
+        @app.callback(
+        Output(f"{prefix}-selected-price-level", "data"),
+        Input(f"{prefix}-price-depth-grid", "cellClicked")
         )
         def display_selected(selected):
             if not selected:

@@ -11,4 +11,4 @@ To run from the docker
 ```
 docker compose up -d --build
 ```
-URL: http://localhost:8050
+URL: http://127.0.0.1:8050
