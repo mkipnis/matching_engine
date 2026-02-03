@@ -1,4 +1,5 @@
-import json
+# Copyright (c) Mike Kipnis - DistributedATS
+
 import liquibook
 from liquibook_adapter import DepthListener
 from liquibook_adapter import BBOListener
@@ -26,7 +27,7 @@ class LiquiBookAdapter:
         self.price_depth_book.set_bbo_listener(self.bbo_listener)
         self.price_depth_book.set_order_listener(self.order_listener)
 
-        logger.info(f"LiquiBookAdapter initialized: prefix={self.prefix}")
+        logger.info(f"LiquibookAdapter initialized: prefix={self.prefix}")
 
     def update_order_book_data(self):
         return {
@@ -41,7 +42,7 @@ class LiquiBookAdapter:
         order = liquibook.SimpleOrder(order_props['is_buy'], order_props['price'], order_props['quantity'], order_props['stop_price'],
                                       order_props['condition'])
 
-        logger.info(f"Order submitted: {json_serializer.order(order)}")
+        logger.info(f"prefix={self.prefix} Order submitted: {json_serializer.order(order)}")
 
         self.order_states[order.order_id_] = order
         self.price_depth_book.add(order, order_props['condition'])
@@ -53,7 +54,7 @@ class LiquiBookAdapter:
         order_to_cancel = self.order_states[cancel_order['order_id_']]
         self.price_depth_book.cancel(order_to_cancel)
 
-        logger.info(f"Order cancelled: {json_serializer.order(order_to_cancel)}")
+        logger.info(f"prefix={self.prefix} Order cancelled: {json_serializer.order(order_to_cancel)}")
 
         return self.update_order_book_data()
 
@@ -61,7 +62,7 @@ class LiquiBookAdapter:
         order_to_modify = self.order_states[order_to_modify['order_id_']]
         self.price_depth_book.replace(order_to_modify, size_delta, new_price)
 
-        logger.info(f"Order modified: {json_serializer.order(order_to_modify)}")
+        logger.info(f"prefix={self.prefix} Order modified: {json_serializer.order(order_to_modify)}")
 
         return self.update_order_book_data()
 

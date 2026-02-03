@@ -1,3 +1,5 @@
+# Copyright (c) Mike Kipnis - DistributedATS
+
 import liquibook
 from liquibook.helpers import json_serializer
 import logging
