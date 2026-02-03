@@ -7,7 +7,7 @@ python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
 
-To run from the docker
+To run from the docker:
 ```
 docker compose up -d --build
 ```
