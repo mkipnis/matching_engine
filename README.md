@@ -1,4 +1,4 @@
-## Matching Enging - Liquibook
+## Matching Engine - Liquibook
 
 A Plotly/Dash web application that serves as a front end to the Liquibook matching engine, exposing the engine through Python bindings and enabling real-time order book visualization and interaction.
 
@@ -18,7 +18,7 @@ python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
 
-### To run from the docker:
+### To run from the Docker:
 ```
 docker compose up -d --build
 ```
